@@ -21,8 +21,7 @@ public class ChatController {
 
         String reply = chatService.generateReply(
                 request.getMessage(),
-                request.getLanguage()
-        );
+                request.getLanguage());
 
         return new ChatResponse(reply);
     }

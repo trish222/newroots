@@ -8,6 +8,10 @@ Environment variables
 - `OPENAI_MODEL` (optional) — default: `gpt-3.5-turbo`.
 - `OPENAI_SYSTEM_PROMPT` (optional) — default system prompt used to guide the assistant.
 
+Security note: Do NOT commit `OPENAI_API_KEY` to source. If you have already committed
+an API key, rotate it immediately (generate a new key in OpenAI and revoke the old one).
+Store keys in environment variables or a secrets manager.
+
 Example (macOS / zsh):
 
 ```bash

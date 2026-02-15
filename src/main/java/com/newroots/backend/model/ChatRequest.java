@@ -9,12 +9,12 @@ public class ChatRequest {
         return message;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
     public String getLanguage() {
         return language;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public void setLanguage(String language) {

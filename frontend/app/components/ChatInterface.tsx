@@ -17,7 +17,7 @@ interface ChatInterfaceProps {
 }
 
 export function ChatInterface({ onPromptClick }: ChatInterfaceProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
