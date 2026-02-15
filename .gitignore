@@ -38,5 +38,6 @@ dist/
 .env.local
 
 ### Build outputs ###
+target/
 *.log
 .DS_Store
