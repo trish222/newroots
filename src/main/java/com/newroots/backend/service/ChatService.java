@@ -5,13 +5,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class ChatService {
 
-    private final OpenAIService openAIService;
+    private final OllamaService ollamaService;
 
-    public ChatService(OpenAIService openAIService) {
-        this.openAIService = openAIService;
+    public ChatService(OllamaService ollamaService) {
+        this.ollamaService = ollamaService;
     }
 
     public String generateReply(String message, String language) {
-        return openAIService.generateReply(message, language);
+        return ollamaService.generateReply(message, language);
     }
 }
