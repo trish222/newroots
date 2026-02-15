@@ -39,7 +39,6 @@ export function ChatInterface({ onPromptClick }: ChatInterfaceProps) {
 
   const handleSend = () => {
     if (!inputValue.trim()) return;
-
     const userMessage: Message = {
       id: Date.now().toString(),
       text: inputValue,
@@ -48,18 +47,34 @@ export function ChatInterface({ onPromptClick }: ChatInterfaceProps) {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const loadingId = `loading-${Date.now()}`;
+    const loadingMessage: Message = {
+      id: loadingId,
+      text: '...',
+      sender: 'assistant',
+      timestamp: new Date(),
+    };
+
+    setMessages(prev => [...prev, loadingMessage]);
+    const payload = { message: inputValue, language };
     setInputValue('');
 
-    // Simulate assistant response
-    setTimeout(() => {
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: "I understand you need help with that. Let me guide you through the steps. Please check the 'Your Next Steps' panel on the right for detailed guidance.",
-        sender: 'assistant',
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, assistantMessage]);
-    }, 1000);
+    fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+      .then(async (res) => {
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+      })
+      .then((data) => {
+        const reply = data.reply || data.message || JSON.stringify(data);
+        setMessages(prev => prev.map(m => m.id === loadingId ? { ...m, text: reply } : m));
+      })
+      .catch((err) => {
+        setMessages(prev => prev.map(m => m.id === loadingId ? { ...m, text: '(Error) ' + err.message } : m));
+      });
   };
 
   const handlePromptClick = (promptKey: string) => {
