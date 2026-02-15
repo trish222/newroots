@@ -27,6 +27,7 @@ export function ChatInterface({ onPromptClick }: ChatInterfaceProps) {
     }
   ]);
   const [inputValue, setInputValue] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const quickPrompts = [
     { key: 'prompt.health', icon: '🏥' },
@@ -59,6 +60,9 @@ export function ChatInterface({ onPromptClick }: ChatInterfaceProps) {
     const payload = { message: inputValue, language };
     setInputValue('');
 
+    if (isLoading) return; // prevent duplicate sends
+    setIsLoading(true);
+
     fetch('/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -71,9 +75,11 @@ export function ChatInterface({ onPromptClick }: ChatInterfaceProps) {
       .then((data) => {
         const reply = data.reply || data.message || JSON.stringify(data);
         setMessages(prev => prev.map(m => m.id === loadingId ? { ...m, text: reply } : m));
+        setIsLoading(false);
       })
       .catch((err) => {
         setMessages(prev => prev.map(m => m.id === loadingId ? { ...m, text: '(Error) ' + err.message } : m));
+        setIsLoading(false);
       });
   };
 
