@@ -51,7 +51,7 @@ export function ChatInterface({ onPromptClick }: ChatInterfaceProps) {
     const loadingId = `loading-${Date.now()}`;
     const loadingMessage: Message = {
       id: loadingId,
-      text: '...',
+      text: 'Thinking... ⏳',
       sender: 'assistant',
       timestamp: new Date(),
     };
@@ -63,22 +63,44 @@ export function ChatInterface({ onPromptClick }: ChatInterfaceProps) {
     if (isLoading) return; // prevent duplicate sends
     setIsLoading(true);
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
     fetch('/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
+      signal: controller.signal,
     })
       .then(async (res) => {
-        if (!res.ok) throw new Error(await res.text());
-        return res.json();
+        clearTimeout(timeoutId);
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error('Chat error response:', res.status, errorText);
+          throw new Error(`Server error (${res.status}): ${errorText}`);
+        }
+        const data = await res.json();
+        console.log('Chat response:', data);
+        return data;
       })
       .then((data) => {
         const reply = data.reply || data.message || JSON.stringify(data);
+        if (!reply || reply.trim() === '') {
+          throw new Error('Empty response from server');
+        }
         setMessages(prev => prev.map(m => m.id === loadingId ? { ...m, text: reply } : m));
         setIsLoading(false);
       })
       .catch((err) => {
-        setMessages(prev => prev.map(m => m.id === loadingId ? { ...m, text: '(Error) ' + err.message } : m));
+        clearTimeout(timeoutId);
+        console.error('Chat request error:', err);
+        let errorMessage = err.message;
+        if (err.name === 'AbortError') {
+          errorMessage = 'Request timeout - Ollama or backend may not be running';
+        } else if (!errorMessage) {
+          errorMessage = 'Unable to reach chat service';
+        }
+        setMessages(prev => prev.map(m => m.id === loadingId ? { ...m, text: `(Error) ${errorMessage}` } : m));
         setIsLoading(false);
       });
   };
